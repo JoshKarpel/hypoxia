@@ -1,3 +1,4 @@
+import collections
 from typing import Callable, Optional
 
 
@@ -12,6 +13,9 @@ class Result:
     def __hash__(self):
         return hash(self._val)
 
+    def __repr__(self):
+        return f'{self.__class__.__name__}({repr(self._val)})'
+
 
 class Option:
     def __init__(self, val):
@@ -19,6 +23,9 @@ class Option:
 
     def __hash__(self):
         return hash(self._val)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({repr(self._val)})'
 
 
 class Ok(Result):
@@ -64,9 +71,6 @@ class Ok(Result):
     def unwrap_err(self):
         raise Panic(f'unwrap_err on Ok({self._val})')
 
-    def unwrap_or_default(self):
-        return self
-
 
 class Err(Result):
     def is_ok(self) -> bool:
@@ -111,14 +115,66 @@ class Err(Result):
     def unwrap_err(self):
         return self._val
 
-    def unwrap_or_default(self):
-        raise NotImplementedError  # ick
-
 
 class Some(Option):
-    pass
+    def is_some(self) -> bool:
+        return True
+
+    def is_nun(self) -> bool:
+        return not self.is_some()
+
+    def unwrap(self):
+        return self._val
+
+    def unwrap_or(self, default):
+        return self._val
+
+    def unwrap_or_else(self, func: Callable):
+        return self._val
+
+    def map(self, func: Callable):
+        return Some(func(self._val))
 
 
 class Nun(Option):
     def __init__(self):
         super().__init__(None)
+
+    def __repr__(self):
+        return 'Nun'
+
+    def is_some(self) -> bool:
+        return False
+
+    def is_nun(self) -> bool:
+        return not self.is_some()
+
+    def unwrap(self):
+        raise Panic('unwrapped Nun')
+
+    def unwrap_or(self, default):
+        return default
+
+    def unwrap_or_else(self, func: Callable):
+        return func()
+
+    def map(self, func: Callable):
+        return self
+
+
+class HashMap(collections.UserDict):
+    def __getitem__(self, item):
+        try:
+            return Some(super().__getitem__(item))
+        except Exception as e:
+            return Nun()
+
+    def get(self, key):
+        return super().get(key)
+
+
+def open_file(file, *args, **kwargs):
+    try:
+        return Ok(open(file, *args, **kwargs))
+    except Exception as e:
+        return Err(e)
