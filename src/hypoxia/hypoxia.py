@@ -16,6 +16,10 @@ class Result:
     def __repr__(self):
         return f'{self.__class__.__name__}({repr(self._val)})'
 
+    def __eq__(self, other):
+        print(self, other)
+        return self.__class__ == other.__class__ and self._val == other._val
+
 
 class Option:
     def __init__(self, val):
@@ -26,6 +30,9 @@ class Option:
 
     def __repr__(self):
         return f'{self.__class__.__name__}({repr(self._val)})'
+
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self._val == other._val
 
 
 class Ok(Result):
@@ -83,7 +90,7 @@ class Err(Result):
         return Nun()
 
     def err(self) -> Option:
-        return Some(self._val)
+        return Some(self._val.args[0])  # the text of the exception
 
     def map(self, func: Callable) -> Result:
         return self
