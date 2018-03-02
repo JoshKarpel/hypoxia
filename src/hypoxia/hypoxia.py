@@ -1,5 +1,5 @@
 import collections
-from typing import Callable, Optional
+from typing import Callable, Optional, Any
 
 
 class Panic(Exception):
@@ -17,7 +17,6 @@ class Result:
         return f'{self.__class__.__name__}({repr(self._val)})'
 
     def __eq__(self, other):
-        print(self, other)
         return self.__class__ == other.__class__ and self._val == other._val
 
 
@@ -51,14 +50,14 @@ class Ok(Result):
     def map(self, func: Callable):
         return Ok(func(self._val))
 
-    def map_err(self, func: Callable):
-        return Ok(self._val)
+    def map_err(self, func: Callable[[Any], Result]):
+        return self
 
     def and_(self, result: Result):
         return result
 
-    def and_then(self, func: Callable):
-        return Ok(func(self._val))
+    def and_then(self, func: Callable[[Any], Result]):
+        return func(self._val)
 
     def or_(self, result: Result):
         return self
@@ -80,6 +79,12 @@ class Ok(Result):
 
 
 class Err(Result):
+    def __init__(self, val):
+        if not isinstance(val, Exception):
+            raise Panic(f'Err value must be an exception, but was {val}')
+
+        super().__init__(val)
+
     def is_ok(self) -> bool:
         return False
 
@@ -92,16 +97,16 @@ class Err(Result):
     def err(self) -> Option:
         return Some(self._val.args[0])  # the text of the exception
 
-    def map(self, func: Callable) -> Result:
+    def map(self, func: Callable[[Any], Result]) -> Result:
         return self
 
-    def map_err(self, func: Callable) -> Result:
-        return Err(func(self._val))
+    def map_err(self, func: Callable[[Any], Result]) -> Result:
+        return func(self._val)
 
     def and_(self, result: Result):
         return self
 
-    def and_then(self, func: Callable):
+    def and_then(self, func: Callable[[Any], Result]):
         return self
 
     def or_(self, result: Result):
@@ -121,6 +126,9 @@ class Err(Result):
 
     def unwrap_err(self):
         return self._val
+
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self._val.__class__ == other._val.__class__ and self._val.args == other._val.args
 
 
 class Some(Option):

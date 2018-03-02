@@ -12,7 +12,6 @@ setup(
     author = 'Josh Karpel',
     author_email = 'josh.karpel@gmail.com',
     license = '',
-    # description = 'Ionization simulations for the Yavuz Group.',
     long_description = long_desc,
     url = 'https://github.com/JoshKarpel/hypoxia',
     classifiers = [
