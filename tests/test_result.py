@@ -86,3 +86,28 @@ def test_and_then_with_ok():
 def test_and_then_with_ok_and_then_err():
     x = Ok(2)
     assert x.and_then(lambda x: Err(Exception(x + 1))) == Err(Exception(3))
+
+
+def test_and_then_with_err():
+    x = Err(Exception('error message'))
+    assert x.and_then(lambda x: x + 1) == x
+
+
+def test_or_with_ok():
+    x = Ok(2)
+    assert x.or_(Err(Exception('error message'))) == x
+
+
+def test_or_with_err():
+    x = Err(Exception('error message'))
+    assert x.or_(Ok(5)) == Ok(5)
+
+
+def test_or_else_with_ok():
+    x = Ok(2)
+    assert x.or_else(lambda x: Ok(True)) == x
+
+
+def test_or_else_with_err():
+    x = Err(Exception('error message'))
+    assert x.or_else(lambda x: Ok(True)) == Ok(True)
