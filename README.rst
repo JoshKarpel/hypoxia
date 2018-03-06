@@ -6,7 +6,7 @@ We can write simple scripts, complex object-oriented applications, mostly-functi
 There are even ambitious projects like `Coconut <http://coconut-lang.org/>`_, which define a superset of Python that gives you different idioms to work with.
 
 But what if you don't want to work with something that **expands** Python?
-What if you just want to replace `beautiful, idiomatic Python code <https://youtu.be/OSGv2VnC0go>`_ with beautiful, idiomatic Rust code?
+What if you just want to **replace** `beautiful, idiomatic Python code <https://youtu.be/OSGv2VnC0go>`_ with beautiful, idiomatic Rust code?
 
 Welcome to Hypoxia:
 
@@ -24,7 +24,8 @@ Welcome to Hypoxia:
     assert h['num'].map(lambda x: x ** 2).unwrap_or(0) == 4
     assert h['notnum'].map(lambda x: x ** 2).unwrap_or(0) == 0
 
-Never again will we have to write the horrifically confusing
+
+Never again will we have to write horrifically confusing code using `dict.get`'s second argument!
 
 ::
 
@@ -32,27 +33,52 @@ Never again will we have to write the horrifically confusing
     assert d.get('num', 0) ** 2 == 4
     assert d.get('notnum', 0) ** 2 == 0
 
-Read some configuration values from a file, or use defaults if something goes wrong:
+
+Another example: read some configuration values from a file and parse them, or use a default configuration if something goes wrong:
 
 ::
 
     from hypoxia import open_file
 
-    config = open_file('.config, mode = 'r').map(parse_config).unwrap_or(DEFAULT_CONFIG)
+    config = open_file('.config', mode = 'r').map(parse_config).unwrap_or(DEFAULT_CONFIG)
 
-You might be thinking: hold on, you didn't read that file using `open` in a `with` block, so how do you know if it was closed correctly?
-Well, in Rust, this is never a problem because the cleanup happens when the file reference leaves scope.
+The same code in Python would like involve some exception catching (probably at least two, one for the file IO and one for the parsing), making it much longer than a single line.
+PEP8 tells us that 80 characters is a good target for ensuring maximum understandability.
+That line is 86 characters long, so we're doing pretty well.
+
+You might be thinking: hold on, are you sure you closed that file handle?
+Well, in Rust this is never a problem because the cleanup happens when the file reference leaves scope.
 So we'll just assume that Python is doing the right thing here.
+
+
+Wait, back up, what's going on?
+-------------------------------
+
+Rust doesn't have exceptions.
+Instead, errors and possibly-not-found values are communicated using enumerated types: `Result` and `Option`, respectively.
+Hypoxia provides a Rust-like interface for those ideas in pure Python.
+
+In the above examples, indexing the `HashMap` doesn't return the value associated with that key, even if it does exist.
+Instead, an `Option` is returned.
+If it succeeded, it's a `Some` with the value inside, and it didn't, it's a `Nun` (i.e., `None`, but `None` is of course reserved in Python).
+
+Similarly, opening the file doesn't return a file handle.
+It returns a `Result` with the file handle inside, or an `Err` with an exception inside if the operation failed for some reason.
+
 
 Why?
 ----
 
 It is our sacred duty to rewrite everything in Rust.
 
-But Seriously, Why?
+
+But seriously, why?
 -------------------
 
 Because I was learning Rust and had an idea so bad that I just had to do it.
+
+Please don't actually use this.
+
 
 License
 -------

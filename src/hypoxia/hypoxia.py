@@ -181,7 +181,7 @@ class HashMap(collections.UserDict):
     def __getitem__(self, item):
         try:
             return Some(super().__getitem__(item))
-        except Exception as e:
+        except KeyError:
             return Nun()
 
     def get(self, key):
