@@ -144,10 +144,10 @@ class Some(Option):
     def unwrap_or(self, default):
         return self._val
 
-    def unwrap_or_else(self, func: Callable):
+    def unwrap_or_else(self, func: Callable[[], Option]):
         return self._val
 
-    def map(self, func: Callable):
+    def map(self, func: Callable[[Any], Option]):
         return Some(func(self._val))
 
 
@@ -170,10 +170,10 @@ class Nun(Option):
     def unwrap_or(self, default):
         return default
 
-    def unwrap_or_else(self, func: Callable):
+    def unwrap_or_else(self, func: Callable[[], Option]):
         return func()
 
-    def map(self, func: Callable):
+    def map(self, func: Callable[[Any], Option]):
         return self
 
 
