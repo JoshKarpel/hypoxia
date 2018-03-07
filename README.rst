@@ -10,7 +10,7 @@ What if you just want to **replace** `beautiful, idiomatic Python code <https://
 
 Welcome to Hypoxia:
 
-::
+.. code::
 
     from hypoxia import HashMap
 
@@ -25,7 +25,7 @@ Welcome to Hypoxia:
 
 Never again will we have to write horrifically confusing code using ``dict.get``'s second argument!
 
-::
+.. code::
 
     d = dict(num = 2)
     assert d.get('num', 0) ** 2 == 4
@@ -34,7 +34,7 @@ Never again will we have to write horrifically confusing code using ``dict.get``
 
 Another example: read some configuration values from a file and parse them, or use a default configuration if something goes wrong:
 
-::
+.. code::
 
     from hypoxia import open_file
 
@@ -48,7 +48,7 @@ Well, in Rust this is never a problem because the cleanup happens automatically 
 So we'll just assume that Python is doing the right thing here.
 If you're less trusting, you could always use the context manager version:
 
-::
+.. code::
 
     from hypoxia import File
 
