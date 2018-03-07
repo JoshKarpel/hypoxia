@@ -111,3 +111,53 @@ def test_or_else_with_ok():
 def test_or_else_with_err():
     x = Err(Exception('error message'))
     assert x.or_else(lambda x: Ok(True)) == Ok(True)
+
+
+def test_unwrap_with_ok():
+    x = Ok(2)
+
+    assert x.unwrap() == 2
+
+
+def test_unwrap_with_err():
+    x = Err(Exception('error message'))
+
+    with pytest.raises(Panic):
+        x.unwrap()
+
+
+def test_unwrap_or_with_ok():
+    x = Ok(2)
+
+    assert x.unwrap_or(0) == 2
+
+
+def test_unwrap_or_with_err():
+    x = Err(Exception('error message'))
+
+    assert x.unwrap_or(0) == 0
+
+
+def test_unwrap_or_else_with_ok():
+    x = Ok(2)
+
+    assert x.unwrap_or_else(lambda x: x.args[0].upper()) == 2
+
+
+def test_unwrap_or_else_with_err():
+    x = Err(Exception('error message'))
+
+    assert x.unwrap_or_else(lambda x: x.args[0].upper()) == 'ERROR MESSAGE'
+
+
+def test_unwrap_err_with_ok():
+    x = Ok(2)
+
+    with pytest.raises(Panic):
+        x.unwrap_err()
+
+
+def test_unwrap_err_with_err():
+    x = Err(Exception('error message'))
+
+    assert x.unwrap_err().args == Exception('error message').args

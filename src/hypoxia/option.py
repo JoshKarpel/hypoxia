@@ -19,26 +19,32 @@ class Option(abc.ABC):
 
     @abc.abstractmethod
     def is_some(self) -> bool:
+        """Returns ``True`` if the ``Option`` is a ``Some``, and ``False`` if it is a ``Nun``."""
         return True
 
     @abc.abstractmethod
     def is_nun(self) -> bool:
+        """Returns ``True`` if the ``Option`` is a ``Nun``, and ``False`` if it is a ``Some``."""
         return False
 
     @abc.abstractmethod
     def unwrap(self):
+        """If the ``Option`` is a ``Some``, return its value. If it is a ``Nun``, this raises a :class:`Panic`."""
         return self._val
 
     @abc.abstractmethod
     def unwrap_or(self, default):
+        """If the ``Option`` is a ``Some``, return its value. If it is a ``Nun``, return ``default`` instead."""
         return self._val
 
     @abc.abstractmethod
     def unwrap_or_else(self, func: Callable[[], 'Option']):
+        """If the ``Option`` is a ``Some``, return its value. If it is a ``Nun``, return ``func()``."""
         return self._val
 
     @abc.abstractmethod
     def map(self, func: Callable[[Any], 'Option']):
+        """If the ``Option`` is a ``Some``, return ``Some(func(value))``. If it is a ``Nun``, return ``Nun``."""
         return Some(func(self._val))
 
 
@@ -73,7 +79,7 @@ class Nun(Option):
         return False
 
     def is_nun(self) -> bool:
-        return not self.is_some()
+        return True
 
     def unwrap(self):
         raise Panic('unwrapped Nun')

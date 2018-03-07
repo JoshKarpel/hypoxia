@@ -6,6 +6,10 @@ from .option import Option, Some, Nun
 
 
 class Result(abc.ABC):
+    """
+    The value inside an ``Err`` must be something that counts as an instance of :class:`Exception`.
+    """
+
     def __init__(self, val):
         self._val = val
 
@@ -20,10 +24,12 @@ class Result(abc.ABC):
 
     @abc.abstractmethod
     def is_ok(self) -> bool:
+        """Returns ``True`` if the ``Result`` is an ``Ok``, and ``False`` if it is an ``Err``."""
         raise NotImplementedError
 
     @abc.abstractmethod
     def is_err(self) -> bool:
+        """Returns ``True`` if the ``Result`` is an ``Err``, and ``False`` if it is an ``Ok``."""
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -56,22 +62,27 @@ class Result(abc.ABC):
 
     @abc.abstractmethod
     def or_else(self, func: Callable):
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def unwrap_or(self, optb):
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def unwrap_or_else(self, func: Callable):
+        """If the ``Result`` is an ``Ok``, return its value. If it is a ``Err``, this raises a :class:`Panic`."""
         raise NotImplementedError
 
     @abc.abstractmethod
     def unwrap(self):
+        """If the ``Result`` is an ``Ok``, return its value. If it is a ``Err``, this raises a :class:`Panic`."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def unwrap_or(self, default):
+        """If the ``Result`` is an ``Ok``, return its value. If it is a ``Err``, return ``default`` instead."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def unwrap_or_else(self, func: Callable):
+        """If the ``Result`` is an ``Ok``, return its value. If it is a ``Err``, return ``func(value)`` instead."""
         raise NotImplementedError
 
     @abc.abstractmethod
     def unwrap_err(self):
+        """If the ``Result`` is an ``Err``, return its value. If it is a ``Ok``, this raises a :class:`Panic`."""
         raise NotImplementedError
 
 
@@ -106,17 +117,17 @@ class Ok(Result):
     def or_else(self, func: Callable):
         return self
 
-    def unwrap_or(self, optb):
-        return self
-
-    def unwrap_or_else(self, func: Callable):
-        return func(self._val)
-
     def unwrap(self):
         return self._val
 
+    def unwrap_or(self, default):
+        return self._val
+
+    def unwrap_or_else(self, func: Callable):
+        return self._val
+
     def unwrap_err(self):
-        raise Panic(f'unwrap_err on Ok({self._val})')
+        raise Panic(f'unwrap_err on {self}')
 
 
 class Err(Result):
@@ -156,14 +167,14 @@ class Err(Result):
     def or_else(self, func: Callable):
         return func(self._val)
 
-    def unwrap_or(self, optb):
-        return optb
+    def unwrap(self):
+        raise Panic(f'unwrap on {self}')
+
+    def unwrap_or(self, default):
+        return default
 
     def unwrap_or_else(self, func: Callable):
         return func(self._val)
-
-    def unwrap(self):
-        raise self._val
 
     def unwrap_err(self):
         return self._val
