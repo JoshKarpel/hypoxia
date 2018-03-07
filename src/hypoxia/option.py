@@ -20,32 +20,36 @@ class Option(abc.ABC):
     @abc.abstractmethod
     def is_some(self) -> bool:
         """Returns ``True`` if the ``Option`` is a ``Some``, and ``False`` if it is a ``Nun``."""
-        return True
+        raise NotImplementedError
 
     @abc.abstractmethod
     def is_nun(self) -> bool:
         """Returns ``True`` if the ``Option`` is a ``Nun``, and ``False`` if it is a ``Some``."""
-        return False
+        raise NotImplementedError
 
     @abc.abstractmethod
     def unwrap(self):
         """If the ``Option`` is a ``Some``, return its value. If it is a ``Nun``, this raises a :class:`Panic`."""
-        return self._val
+        raise NotImplementedError
 
     @abc.abstractmethod
     def unwrap_or(self, default):
         """If the ``Option`` is a ``Some``, return its value. If it is a ``Nun``, return ``default`` instead."""
-        return self._val
+        raise NotImplementedError
 
     @abc.abstractmethod
     def unwrap_or_else(self, func: Callable[[], 'Option']):
         """If the ``Option`` is a ``Some``, return its value. If it is a ``Nun``, return ``func()``."""
-        return self._val
+        raise NotImplementedError
 
     @abc.abstractmethod
     def map(self, func: Callable[[Any], 'Option']):
         """If the ``Option`` is a ``Some``, return ``Some(func(value))``. If it is a ``Nun``, return ``Nun``."""
-        return Some(func(self._val))
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def map_or(self, func: Callable[[Any], Any], default: Any):
+        raise NotImplementedError
 
 
 class Some(Option):
@@ -66,6 +70,9 @@ class Some(Option):
 
     def map(self, func: Callable[[Any], Option]):
         return Some(func(self._val))
+
+    def map_or(self, func: Callable[[Any], Any], default: Any):
+        return func(self._val)
 
 
 class Nun(Option):
@@ -92,3 +99,6 @@ class Nun(Option):
 
     def map(self, func: Callable[[Any], Option]):
         return self
+
+    def map_or(self, func: Callable[[Any], Any], default: Any):
+        return default
