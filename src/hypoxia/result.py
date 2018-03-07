@@ -1,12 +1,11 @@
-import collections
-from typing import Callable, Optional, Any
+import abc
+from typing import Callable, Any
+
+from hypoxia import Panic
+from .option import Option, Some, Nun
 
 
-class Panic(Exception):
-    pass
-
-
-class Result:
+class Result(abc.ABC):
     def __init__(self, val):
         self._val = val
 
@@ -19,19 +18,61 @@ class Result:
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self._val == other._val
 
+    @abc.abstractmethod
+    def is_ok(self) -> bool:
+        raise NotImplementedError
 
-class Option:
-    def __init__(self, val):
-        self._val = val
+    @abc.abstractmethod
+    def is_err(self) -> bool:
+        raise NotImplementedError
 
-    def __hash__(self):
-        return hash(self._val)
+    @abc.abstractmethod
+    def ok(self) -> 'Option':
+        raise NotImplementedError
 
-    def __repr__(self):
-        return f'{self.__class__.__name__}({repr(self._val)})'
+    @abc.abstractmethod
+    def err(self) -> 'Option':
+        raise NotImplementedError
 
-    def __eq__(self, other):
-        return self.__class__ == other.__class__ and self._val == other._val
+    @abc.abstractmethod
+    def map(self, func: Callable):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def map_err(self, func: Callable[[Any], 'Result']):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def and_(self, result: 'Result'):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def and_then(self, func: Callable[[Any], 'Result']):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def or_(self, result: 'Result'):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def or_else(self, func: Callable):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def unwrap_or(self, optb):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def unwrap_or_else(self, func: Callable):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def unwrap(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def unwrap_err(self):
+        raise NotImplementedError
 
 
 class Ok(Result):
@@ -39,7 +80,7 @@ class Ok(Result):
         return True
 
     def is_err(self) -> bool:
-        return not self.is_ok()
+        return False
 
     def ok(self) -> Option:
         return Some(self._val)
@@ -89,7 +130,7 @@ class Err(Result):
         return False
 
     def is_err(self) -> bool:
-        return not self.is_ok()
+        return True
 
     def ok(self) -> Option:
         return Nun()
@@ -129,82 +170,3 @@ class Err(Result):
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self._val.__class__ == other._val.__class__ and self._val.args == other._val.args
-
-
-class Some(Option):
-    def is_some(self) -> bool:
-        return True
-
-    def is_nun(self) -> bool:
-        return not self.is_some()
-
-    def unwrap(self):
-        return self._val
-
-    def unwrap_or(self, default):
-        return self._val
-
-    def unwrap_or_else(self, func: Callable[[], Option]):
-        return self._val
-
-    def map(self, func: Callable[[Any], Option]):
-        return Some(func(self._val))
-
-
-class Nun(Option):
-    def __init__(self):
-        super().__init__(None)
-
-    def __repr__(self):
-        return 'Nun'
-
-    def is_some(self) -> bool:
-        return False
-
-    def is_nun(self) -> bool:
-        return not self.is_some()
-
-    def unwrap(self):
-        raise Panic('unwrapped Nun')
-
-    def unwrap_or(self, default):
-        return default
-
-    def unwrap_or_else(self, func: Callable[[], Option]):
-        return func()
-
-    def map(self, func: Callable[[Any], Option]):
-        return self
-
-
-class HashMap(collections.UserDict):
-    def __getitem__(self, item):
-        try:
-            return Some(super().__getitem__(item))
-        except KeyError:
-            return Nun()
-
-    def get(self, key):
-        return super().get(key)
-
-
-def open_file(file, *args, **kwargs):
-    try:
-        return Ok(open(file, *args, **kwargs))
-    except Exception as e:
-        return Err(e)
-
-
-class File:
-    def __init__(self, file, *args, **kwargs):
-        self.file = file
-        self.args = args
-        self.kwargs = kwargs
-
-    def __enter__(self):
-        self._file = open_file(self.file, *self.args, **self.kwargs)
-
-        return self._file
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._file.map(lambda f: f.close())
