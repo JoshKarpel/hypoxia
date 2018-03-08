@@ -1,11 +1,14 @@
 import abc
-from typing import Callable, Any
+from typing import Callable, Any, TypeVar, Generic
 
-from hypoxia import Panic
-from .option import Option, Some, Nun
+from .exceptions import Panic
+from . import option
+
+T = TypeVar('T')
+U = TypeVar('U')
 
 
-class Result(abc.ABC):
+class Result(abc.ABC, Generic[T]):
     """
     The value inside an ``Err`` must be something that counts as an instance of :class:`Exception`.
     """
@@ -93,11 +96,11 @@ class Ok(Result):
     def is_err(self) -> bool:
         return False
 
-    def ok(self) -> Option:
-        return Some(self._val)
+    def ok(self) -> option.Option:
+        return option.Some(self._val)
 
-    def err(self) -> Option:
-        return Nun()
+    def err(self) -> option.Option:
+        return option.Nun()
 
     def map(self, func: Callable):
         return Ok(func(self._val))
@@ -137,17 +140,20 @@ class Err(Result):
 
         super().__init__(val)
 
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self._val.__class__ == other._val.__class__ and self._val.args == other._val.args
+
     def is_ok(self) -> bool:
         return False
 
     def is_err(self) -> bool:
         return True
 
-    def ok(self) -> Option:
-        return Nun()
+    def ok(self) -> option.Option:
+        return option.Nun()
 
-    def err(self) -> Option:
-        return Some(self._val.args[0])  # the text of the exception
+    def err(self) -> option.Option:
+        return option.Some(self._val.args[0])  # the text of the exception
 
     def map(self, func: Callable[[Any], Result]) -> Result:
         return self
@@ -178,6 +184,3 @@ class Err(Result):
 
     def unwrap_err(self):
         return self._val
-
-    def __eq__(self, other):
-        return self.__class__ == other.__class__ and self._val.__class__ == other._val.__class__ and self._val.args == other._val.args
