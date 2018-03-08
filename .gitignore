@@ -90,3 +90,4 @@ ENV/
 
 .idea/
 .pytest_cache/
+covreport/

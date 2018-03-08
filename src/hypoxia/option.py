@@ -1,5 +1,5 @@
 import abc
-from typing import Callable, Any, TypeVar, Generic
+from typing import Callable, TypeVar, Generic
 
 from .exceptions import Panic
 from . import result
@@ -9,8 +9,8 @@ U = TypeVar('U')
 
 
 class Option(abc.ABC, Generic[T]):
-    def __init__(self, val: T):
-        self._val = val
+    def __init__(self, value: T):
+        self._val = value
 
     def __hash__(self):
         return hash(self._val)
@@ -20,9 +20,6 @@ class Option(abc.ABC, Generic[T]):
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self._val == other._val
-
-    def __iter__(self):
-        yield self._val
 
     @abc.abstractmethod
     def is_some(self) -> bool:
@@ -106,6 +103,9 @@ class Option(abc.ABC, Generic[T]):
 
 
 class Some(Option):
+    def __iter__(self):
+        yield self._val
+
     def is_some(self) -> bool:
         return True
 

@@ -16,3 +16,10 @@ def test_write(tmpdir):
 
     with open(path, mode = 'r') as f_from_open:
         assert f_from_open.read() == 'hello'
+
+
+def test_read_on_file_that_doesnt_exist(tmpdir):
+    path = pathlib.Path(tmpdir) / 'test.txt'
+
+    with File(path, mode = 'r') as f:
+        assert f.is_err()

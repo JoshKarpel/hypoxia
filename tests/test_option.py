@@ -244,3 +244,27 @@ def test_get_or_insert_with_with_nun():
 
     assert x.get_or_insert_with(lambda: 5) == 5
     assert isinstance(x, Some)
+
+
+def test_hash_some():
+    x = Some(2)
+    y = Some(2)
+
+    assert x == y
+    assert hash(x) == hash(y)
+
+
+def test_hash_some_not_eq():
+    x = Some(2)
+    y = Some(3)
+
+    assert x != y
+    assert hash(x) != hash(y)
+
+
+def test_hash_nun():
+    x = Nun()
+    y = Nun()
+
+    assert x == y
+    assert hash(x) == hash(y)
