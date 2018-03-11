@@ -5,3 +5,5 @@ from .option import Option, Some, Nun
 
 from .hashmap import HashMap
 from .files import open_file, File
+
+from .impl import impl
