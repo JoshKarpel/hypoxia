@@ -7,6 +7,4 @@ def impl(cls: Type):
     def wrapper(func):
         setattr(cls, func.__name__, func)
 
-        return func
-
     return wrapper

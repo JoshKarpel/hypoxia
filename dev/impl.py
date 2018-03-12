@@ -25,6 +25,8 @@ f.impl_method()
 print(type(f.method))
 print(type(f.impl_method))
 
+print(globals())
+
 # print(impl_method.__get__(None, type(None)))
 # print(impl_method.__get__(f, type(f)))
 # impl_method.__get__(f, type(f))()
