@@ -21,21 +21,20 @@ class Iter(Generic[T]):
     # METHODS THAT RETURN NEW ITERATORS
 
     def zip(self, *iters: Iterable) -> 'Iter[Tuple]':
+        """Make an ``Iter`` of tuples of aligned elements from this ``Iter`` and each of the input iterables."""
         return Iter(zip(self, *iters))
 
-    def enumerate(self):
-        return Iter(enumerate(self))
+    def enumerate(self, start: int = 0):
+        """Return an ``Iter`` of tuples containing a count (starting from ``start``) and the elements of the original ``Iter``."""
+        return Iter(enumerate(self, start = start))
 
     def map(self, func: Callable[[T], U]) -> 'Iter[U]':
         """Return a new ``Iter``, with each element mapped under the function ``func``."""
-        return Iter(func(t) for t in self.iterator)
+        return Iter(map(func, self))
 
     def filter(self, func: Callable[[T], bool]) -> 'Iter[T]':
         """Return a new ``Iter``, containing only elements that ``func(element)`` is true for."""
-        return Iter(t for t in self.iterator if func(t))
-
-    def reduce(self, func: Callable[[U, T], U], initial: Optional[U] = None) -> U:
-        return functools.reduce(func, self, initial = initial)
+        return Iter(filter(func, self))
 
     # METHODS THAT COLLAPSE THE ITERATOR, RETURNING SINGLE VALUES
 
@@ -49,3 +48,11 @@ class Iter(Generic[T]):
         If the ``Iter`` is empty, this returns ``False``.
         """
         return any(self)
+
+    def reduce(self, func: Callable[[U, T], U], initial: Optional[U] = None) -> U:
+        """
+        Apply ``func`` cumulatively to the items in the iterable from left to right.
+        The first argument of ``func`` is the accumulated value, the second is the next element of the iterable.
+        If ``initial`` is given, it is first accumulated value.
+        """
+        return functools.reduce(func, self, initial = initial)
