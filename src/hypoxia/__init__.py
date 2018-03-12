@@ -8,4 +8,4 @@ from .files import open_file, File
 
 from .impl import impl
 
-from .dwell import Dwell
+from .iter import Iter

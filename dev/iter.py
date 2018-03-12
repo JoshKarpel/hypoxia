@@ -1,10 +1,10 @@
-from hypoxia import Dwell
+from hypoxia import Iter
 
 x = (c for c in 'hello')
 
 print(x)
 
-h = Dwell(x)
+h = Iter(x)
 print(h)
 
 # y = h.map(lambda c: c.upper())
@@ -13,4 +13,4 @@ print(y)
 
 print(''.join(y))
 
-x = (c for c in 'hello')
+# x = (c for c in 'hello')
