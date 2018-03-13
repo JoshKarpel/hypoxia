@@ -1,6 +1,7 @@
-from typing import Iterable, Callable, Generic, TypeVar, Tuple, Optional, Iterator, Union, List, Any
+from typing import Iterable, Callable, Generic, TypeVar, Tuple, Optional, Iterator, Union, List, Any, Type, Container
 import functools
 import itertools
+import operator
 
 from .option import Option, Some, Nun
 
@@ -20,17 +21,36 @@ class Iter(Generic[T]):
     def __next__(self):
         return next(self.iterator)
 
+    # CONSTRUCTORS
+
+    @classmethod
+    def count(cls, start = 0, step = 1) -> 'Iter[int]':
+        return cls(itertools.count(start = start, step = step))
+
+    @classmethod
+    def repeat(cls, element: T) -> 'Iter[T]':
+        return cls(itertools.repeat(element))
+
     # METHODS THAT RETURN NEW ITERATORS
 
     def chain(self, *iters) -> 'Iter':
-        return Iter(itertools.chain(*iters))
+        return self.__class__(itertools.chain(*iters))
+
+    def __add__(self, other):
+        return self.chain(other)
 
     def zip(self, *iters: Iterable) -> 'Iter[Tuple]':
         """Make an ``Iter`` of tuples of aligned elements from this ``Iter`` and each of the input iterables."""
-        return Iter(zip(self, *iters))
+        return self.__class__(zip(self, *iters))
+
+    def __and__(self, other):
+        return self.zip(other)
 
     def zip_longest(self, *iters: Iterable, fill = None) -> 'Iter[Tuple]':
-        return Iter(itertools.zip_longest(self, *iters, fillvalue = fill))
+        return self.__class__(itertools.zip_longest(self, *iters, fillvalue = fill))
+
+    def __or__(self, other):
+        self.zip_longest(self, other)
 
     def unzip(self) -> List[List]:
         """Unzip an ``Iter`` into lists."""
@@ -45,27 +65,45 @@ class Iter(Generic[T]):
 
     def enumerate(self, start: int = 0):
         """Return an ``Iter`` of tuples containing a count (starting from ``start``) and the elements of the original ``Iter``."""
-        return Iter(enumerate(self, start = start))
+        return self.__class__(enumerate(self, start = start))
 
     def map(self, func: Callable[[T], U]) -> 'Iter[U]':
         """Return a new ``Iter``, with each element mapped under the function ``func``."""
-        return Iter(map(func, self))
+        return self.__class__(map(func, self))
+
+    def star_map(self, func: Callable[[...], U]) -> 'Iter[U]':
+        return self.__class__(itertools.starmap(func, self))
 
     def filter(self, func: Callable[[T], bool]) -> 'Iter[T]':
         """Return a new ``Iter``, containing only elements that ``func(element)`` is true for."""
-        return Iter(filter(func, self))
+        return self.__class__(filter(func, self))
+
+    def compress(self, selectors: Iterable[bool]) -> 'Iter[T]':
+        return self.__class__(itertools.compress(self, selectors))
 
     def skip_while(self, func: Callable[[T], bool]) -> 'Iter[T]':
-        return Iter(itertools.dropwhile(func, self))
+        return self.__class__(itertools.dropwhile(func, self))
 
     def take_while(self, func: Callable[[T], bool]) -> 'Iter[T]':
-        return Iter(itertools.takewhile(func, self))
+        return self.__class__(itertools.takewhile(func, self))
 
     def permutations(self, r = None) -> 'Iter':
-        return Iter(itertools.permutations(self, r = r))
+        return self.__class__(itertools.permutations(self, r = r))
 
-    def product(self, *iters, repeat = 1) -> 'Iter':
-        return Iter(itertools.product(self, *iters, repeat = repeat))
+    def combinations(self, r) -> 'Iter':
+        return self.__class__(itertools.combinations(self, r))
+
+    def combinations_with_replacement(self, r) -> 'Iter':
+        return self.__class__(itertools.combinations_with_replacement(self, r))
+
+    def product(self, *iters, repeat: int = 1) -> 'Iter':
+        return self.__class__(itertools.product(self, *iters, repeat = repeat))
+
+    def __mul__(self, other):
+        return self.product(self, other)
+
+    def cycle(self):
+        return self.__class__(itertools.cycle(self))
 
     # METHODS THAT COLLAPSE THE ITERATOR, RETURNING SINGLE VALUES
 
@@ -80,11 +118,17 @@ class Iter(Generic[T]):
         """
         return any(self)
 
-    def max(self):
-        return max(self)
+    def max(self, key = None):
+        return max(self, key = key)
 
-    def min(self):
-        return min(self)
+    def min(self, key = None):
+        return min(self, key = key)
+
+    def sum(self):
+        return sum(self)
+
+    def mul(self, initial: U = 1) -> U:
+        return self.reduce(operator.mul, initial = initial)
 
     def find(self, func: Callable[[T], bool]) -> Option[T]:
         for t in self:
@@ -115,9 +159,30 @@ class Iter(Generic[T]):
         """
         return functools.reduce(func, self, initial = initial)
 
+    def collect(self, collection_type: Type[Container]) -> Container[T]:
+        return collection_type(self)
+
     # METHODS THAT DO OTHER STUFF
+
+    def partition(self, func: Callable[[T], bool]) -> Tuple[List[T], List[T]]:
+        passed = []
+        failed = []
+        for t in self:
+            if func(t):
+                passed.append(t)
+            else:
+                failed.append(t)
+
+        return passed, failed
 
     def for_each(self, func: Callable[[T], None]) -> None:
         """Call a function on each element of the ``Iter``."""
         for t in self:
             func(t)
+
+    def star_for_each(self, func: Callable[[...], None]) -> None:
+        for t in self:
+            func(*t)
+
+    def sorted(self, key = None, reverse = False):
+        return sorted(self, key = key, reverse = reverse)
