@@ -17,6 +17,14 @@ def test_zip(char_iter, int_iter):
     assert tuple(int_iter.zip(char_iter)) == ((0, 'H'), (1, 'e'), (2, 'l'), (3, 'l'), (4, 'o'))
 
 
+def test_unzip():
+    foo = Iter(range(3)).zip(range(3), range(3))
+
+    a, b, c = foo.unzip()
+
+    assert a == b == c == [0, 1, 2]
+
+
 def test_enumerate():
     d = Iter(('a', 'b', 'c'))
 
