@@ -28,13 +28,15 @@ class Iter(Generic[T]):
         return cls(itertools.count(start = start, step = step))
 
     @classmethod
-    def repeat(cls, element: T) -> 'Iter[T]':
-        return cls(itertools.repeat(element))
+    def repeat(cls, element: T, times: Optional[int] = None) -> 'Iter[T]':
+        if times is None:
+            return cls(itertools.repeat(element))
+        return cls(itertools.repeat(element, times = times))
 
     # METHODS THAT RETURN NEW ITERATORS
 
     def chain(self, *iters) -> 'Iter':
-        return self.__class__(itertools.chain(*iters))
+        return self.__class__(itertools.chain(self, *iters))
 
     def __add__(self, other):
         return self.chain(other)
@@ -50,7 +52,7 @@ class Iter(Generic[T]):
         return self.__class__(itertools.zip_longest(self, *iters, fillvalue = fill))
 
     def __or__(self, other):
-        self.zip_longest(self, other)
+        return self.zip_longest(other)
 
     def unzip(self) -> List[List]:
         """Unzip an ``Iter`` into lists."""
@@ -71,7 +73,7 @@ class Iter(Generic[T]):
         """Return a new ``Iter``, with each element mapped under the function ``func``."""
         return self.__class__(map(func, self))
 
-    def star_map(self, func: Callable[[...], U]) -> 'Iter[U]':
+    def star_map(self, func: Callable[[Any], U]) -> 'Iter[U]':
         return self.__class__(itertools.starmap(func, self))
 
     def filter(self, func: Callable[[T], bool]) -> 'Iter[T]':
@@ -189,7 +191,7 @@ class Iter(Generic[T]):
         for t in self:
             func(t)
 
-    def star_for_each(self, func: Callable[[...], None]) -> None:
+    def star_for_each(self, func: Callable[[Any], None]) -> None:
         for t in self:
             func(*t)
 
