@@ -78,6 +78,9 @@ class Iter(Generic[T]):
         """Return a new ``Iter``, containing only elements that ``func(element)`` is true for."""
         return self.__class__(filter(func, self))
 
+    def filter_map(self, func: Callable[[T], Option[U]]) -> 'Iter[U]':
+        return self.map(func).filter(lambda x: x.is_some()).map(lambda x: x.unwrap())
+
     def compress(self, selectors: Iterable[bool]) -> 'Iter[T]':
         return self.__class__(itertools.compress(self, selectors))
 
@@ -129,6 +132,12 @@ class Iter(Generic[T]):
 
     def mul(self, initial: U = 1) -> U:
         return self.reduce(operator.mul, initial = initial)
+
+    def dot(self, other):
+        return sum(map(operator.mul, self, other))
+
+    def __matmul__(self, other):
+        return self.dot(other)
 
     def find(self, func: Callable[[T], bool]) -> Option[T]:
         for t in self:
