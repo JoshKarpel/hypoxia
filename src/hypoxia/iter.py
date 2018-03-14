@@ -110,6 +110,9 @@ class Iter(Generic[T]):
     def cycle(self):
         return self.__class__(itertools.cycle(self))
 
+    def sorted(self, key = None, reversed = False):
+        return Iter(sorted(self, key = key, reverse = reversed))
+
     # METHODS THAT COLLAPSE THE ITERATOR, RETURNING SINGLE VALUES
 
     def all(self) -> bool:
@@ -124,13 +127,19 @@ class Iter(Generic[T]):
         return any(self)
 
     def max(self, key = None):
+        if key is None:
+            return max(self)
         return max(self, key = key)
 
     def min(self, key = None):
+        if key is None:
+            return min(self)
         return min(self, key = key)
 
-    def sum(self):
-        return sum(self)
+    def sum(self, start: Optional[T] = None) -> T:
+        if start is None:
+            return sum(self)
+        return sum(self, start)
 
     def mul(self, initial: U = 1) -> U:
         return self.reduce(operator.mul, initial = initial)
@@ -149,14 +158,14 @@ class Iter(Generic[T]):
         return Nun()
 
     def position(self, func: Callable[[T], bool]) -> Option[int]:
-        for idx, t in self:
+        for idx, t in self.enumerate():
             if func(t):
                 return Some(idx)
 
         return Nun()
 
     def find_position(self, func: Callable[[T], bool]) -> Option[Tuple[int, T]]:
-        for idx, t in self:
+        for idx, t in self.enumerate():
             if func(t):
                 return Some((idx, t))
 
@@ -168,10 +177,15 @@ class Iter(Generic[T]):
         The first argument of ``func`` is the accumulated value, the second is the next element of the iterable.
         If ``initial`` is given, it is first accumulated value.
         """
-        return functools.reduce(func, self, initial = initial)
+        if initial is None:
+            return functools.reduce(func, self)
+        return functools.reduce(func, self, initial)
 
     def collect(self, collection_type: Type[Container]) -> Container[T]:
         return collection_type(self)
+
+    def join(self, separator: str = ''):
+        return separator.join(self.map(str))
 
     # METHODS THAT DO OTHER STUFF
 
@@ -194,6 +208,3 @@ class Iter(Generic[T]):
     def star_for_each(self, func: Callable[[Any], None]) -> None:
         for t in self:
             func(*t)
-
-    def sorted(self, key = None, reverse = False):
-        return sorted(self, key = key, reverse = reverse)

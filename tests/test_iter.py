@@ -2,10 +2,12 @@ import pytest
 
 from hypoxia import Iter, Some, Nun
 
+HELLO_WORLD = 'Hello world!'
+
 
 @pytest.fixture(scope = 'function')
 def char_iter():
-    return Iter(c for c in 'Hello world!')
+    return Iter(c for c in HELLO_WORLD)
 
 
 @pytest.fixture(scope = 'function')
@@ -43,6 +45,14 @@ def test_map_returns_iter(char_iter):
 
 def test_map_doubler(int_iter):
     assert tuple(int_iter.map(lambda x: 2 * x)) == (0, 2, 4, 6, 8)
+
+
+def test_reduce(int_iter):
+    assert int_iter.reduce(lambda acc, elem: max(acc, elem)) == 4
+
+
+def test_reduce_with_initial(int_iter):
+    assert int_iter.reduce(lambda acc, elem: max(acc, elem), initial = 10) == 10
 
 
 def test_filter_returns_iter(char_iter):
@@ -153,3 +163,116 @@ def test_compress():
     selectors = [0, 1, 0, 1, 1, 0]
 
     assert ''.join(x.compress(selectors)) == 'elo'
+
+
+def test_partition(int_iter):
+    even, odd = int_iter.partition(lambda x: x % 2 == 0)
+
+    assert even == [0, 2, 4]
+    assert odd == [1, 3]
+
+
+def test_for_each(int_iter, mocker):
+    mock = mocker.MagicMock()
+
+    int_iter.for_each(mock)
+
+    assert mock.call_count == 5
+    assert mock.call_args_list == [((x,),) for x in range(5)]
+
+
+def test_start_for_each(char_iter, int_iter, mocker):
+    mock = mocker.MagicMock()
+
+    char_iter.zip(int_iter).star_for_each(mock)
+
+    assert mock.call_count == 5
+    assert mock.call_args_list == [(('H', 0),), (('e', 1),), (('l', 2),), (('l', 3),), (('o', 4),)]
+
+
+def test_max(int_iter):
+    assert int_iter.max() == 4
+
+
+def test_max_by_key(int_iter):
+    assert int_iter.max(lambda x: -x) == 0
+
+
+def test_min(int_iter):
+    assert int_iter.min() == 0
+
+
+def test_min_by_key(int_iter):
+    assert int_iter.min(lambda x: -x) == 4
+
+
+def test_sum(int_iter):
+    assert int_iter.sum() == 1 + 2 + 3 + 4
+
+
+def test_sum_with_start(int_iter):
+    assert int_iter.sum(start = 5) == 5 + 1 + 2 + 3 + 4
+
+
+def test_mul(int_iter):
+    next(int_iter)  # skip 0
+    assert int_iter.mul() == 2 * 3 * 4
+
+
+def test_mul_with_initial(int_iter):
+    next(int_iter)  # skip 0
+    assert int_iter.mul(initial = 5) == 2 * 3 * 4 * 5
+
+
+def test_dot():
+    a = Iter(range(3))
+    b = Iter(range(4))
+
+    return a.dot(b) == 1 ** 2 + 2 ** 2 + 3 ** 2
+
+
+def test_matmul():
+    a = Iter(range(3))
+    b = Iter(range(4))
+
+    return a @ b == 1 ** 2 + 2 ** 2 + 3 ** 2
+
+
+def test_find(char_iter):
+    assert char_iter.find(lambda c: c == 'l').unwrap() == 'l'
+
+
+def test_position(char_iter):
+    assert char_iter.position(lambda c: c == 'l').unwrap() == 2
+
+
+def test_find_position(char_iter):
+    assert char_iter.find_position(lambda c: c == 'l').unwrap() == (2, 'l')
+
+
+def test_find_with_no_match(char_iter):
+    assert char_iter.find(lambda c: c == 'z').is_nun()
+
+
+def test_position_with_no_match(char_iter):
+    assert char_iter.position(lambda c: c == 'z').is_nun()
+
+
+def test_find_position_with_no_match(char_iter):
+    assert char_iter.find_position(lambda c: c == 'z').is_nun()
+
+
+def test_collect(int_iter):
+    assert int_iter.collect(tuple) == (0, 1, 2, 3, 4)
+
+
+def test_join(char_iter):
+    assert char_iter.join('-') == 'H-e-l-l-o- -w-o-r-l-d-!'
+
+
+def test_sorted(char_iter):
+    assert char_iter.sorted().join() == ''.join(sorted(HELLO_WORLD))
+
+
+def test_sorted_with_reversed(char_iter):
+    assert char_iter.sorted(reversed = True).join() == ''.join(sorted(HELLO_WORLD, reverse = True))
