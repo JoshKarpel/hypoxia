@@ -1,4 +1,4 @@
-from typing import Iterable, Callable, Generic, TypeVar, Tuple, Optional, Iterator, Union, List, Any, Type, Container
+from typing import Iterable, Callable, Generic, TypeVar, Tuple, Optional, Iterator, Union, List, Any, Type, Collection
 import functools
 import itertools
 import operator
@@ -92,6 +92,12 @@ class Iter(Generic[T]):
     def take_while(self, func: Callable[[T], bool]) -> 'Iter[T]':
         return self.__class__(itertools.takewhile(func, self))
 
+    def product(self, *iters, repeat: int = 1) -> 'Iter':
+        return self.__class__(itertools.product(self, *iters, repeat = repeat))
+
+    def __mul__(self, other):
+        return self.product(other)
+
     def permutations(self, r = None) -> 'Iter':
         return self.__class__(itertools.permutations(self, r = r))
 
@@ -100,12 +106,6 @@ class Iter(Generic[T]):
 
     def combinations_with_replacement(self, r) -> 'Iter':
         return self.__class__(itertools.combinations_with_replacement(self, r))
-
-    def product(self, *iters, repeat: int = 1) -> 'Iter':
-        return self.__class__(itertools.product(self, *iters, repeat = repeat))
-
-    def __mul__(self, other):
-        return self.product(self, other)
 
     def cycle(self):
         return self.__class__(itertools.cycle(self))
@@ -181,7 +181,7 @@ class Iter(Generic[T]):
             return functools.reduce(func, self)
         return functools.reduce(func, self, initial)
 
-    def collect(self, collection_type: Type[Container]) -> Container[T]:
+    def collect(self, collection_type: Type[Collection]) -> Collection[T]:
         return collection_type(self)
 
     def join(self, separator: str = ''):

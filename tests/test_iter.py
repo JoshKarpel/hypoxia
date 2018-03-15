@@ -1,3 +1,4 @@
+import itertools
 import pytest
 
 from hypoxia import Iter, Some, Nun
@@ -276,3 +277,56 @@ def test_sorted(char_iter):
 
 def test_sorted_with_reversed(char_iter):
     assert char_iter.sorted(reversed = True).join() == ''.join(sorted(HELLO_WORLD, reverse = True))
+
+
+def test_skip_while(char_iter):
+    assert char_iter.skip_while(lambda c: c in 'Hello').join() == ' world!'
+
+
+def test_take_while(char_iter):
+    assert char_iter.take_while(lambda c: c in 'Hello').join() == 'Hello'
+
+
+def test_product():
+    x = Iter('ABCD').product(repeat = 2).collect(list)
+
+    assert len(x) == 16
+    assert x == [('A', 'A'), ('A', 'B'), ('A', 'C'), ('A', 'D'), ('B', 'A'), ('B', 'B'), ('B', 'C'), ('B', 'D'), ('C', 'A'), ('C', 'B'), ('C', 'C'), ('C', 'D'), ('D', 'A'), ('D', 'B'), ('D', 'C'), ('D', 'D')]
+
+
+def test___mul__():
+    x = Iter('ABCD')
+    y = Iter('ABCD')
+    z = (x * y).collect(list)
+
+    assert len(z) == 16
+    assert z == [('A', 'A'), ('A', 'B'), ('A', 'C'), ('A', 'D'), ('B', 'A'), ('B', 'B'), ('B', 'C'), ('B', 'D'), ('C', 'A'), ('C', 'B'), ('C', 'C'), ('C', 'D'), ('D', 'A'), ('D', 'B'), ('D', 'C'), ('D', 'D')]
+
+
+def test_permutations():
+    x = Iter('ABCD').permutations(r = 2).collect(list)
+
+    assert len(x) == 12
+    assert x == [('A', 'B'), ('A', 'C'), ('A', 'D'), ('B', 'A'), ('B', 'C'), ('B', 'D'), ('C', 'A'), ('C', 'B'), ('C', 'D'), ('D', 'A'), ('D', 'B'), ('D', 'C')]
+
+
+def test_combinations():
+    x = Iter('ABCD').combinations(2).collect(list)
+
+    assert len(x) == 6
+    assert x == [('A', 'B'), ('A', 'C'), ('A', 'D'), ('B', 'C'), ('B', 'D'), ('C', 'D')]
+
+
+def test_combinations_with_replacement():
+    x = Iter('ABCD').combinations_with_replacement(2).collect(list)
+
+    assert len(x) == 10
+    assert x == [('A', 'A'), ('A', 'B'), ('A', 'C'), ('A', 'D'), ('B', 'B'), ('B', 'C'), ('B', 'D'), ('C', 'C'), ('C', 'D'), ('D', 'D')]
+
+
+def test_cycle():
+    x = Iter('ABCD').cycle()
+    cycle = itertools.cycle('ABCD')
+
+    for _ in range(1000):
+        assert next(x) == next(cycle)
