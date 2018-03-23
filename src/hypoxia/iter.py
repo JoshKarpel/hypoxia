@@ -74,13 +74,15 @@ class Iter(Generic[T]):
         return self.__class__(map(func, self))
 
     def star_map(self, func: Callable[[Any], U]) -> 'Iter[U]':
+        """Return a new ``Iter``, with each element mapped under the function ``func``, unpacked into the arugments of ``func`` as a tuple."""
         return self.__class__(itertools.starmap(func, self))
 
     def filter(self, func: Callable[[T], bool]) -> 'Iter[T]':
-        """Return a new ``Iter``, containing only elements that ``func(element)`` is true for."""
+        """Return a new ``Iter``, containing only elements that ``func(element)`` is ``True`` for."""
         return self.__class__(filter(func, self))
 
     def filter_map(self, func: Callable[[T], Option[U]]) -> 'Iter[U]':
+        """Return a new ``Iter``, containing only elements that ``func(element)`` is a ``Some`` for."""
         return self.map(func).filter(lambda x: x.is_some()).map(lambda x: x.unwrap())
 
     def compress(self, selectors: Iterable[bool]) -> 'Iter[T]':
@@ -96,6 +98,7 @@ class Iter(Generic[T]):
         return self.__class__(itertools.product(self, *iters, repeat = repeat))
 
     def __mul__(self, other):
+        """Operator overload for ``Iter.product``."""
         return self.product(other)
 
     def permutations(self, r = None) -> 'Iter':
@@ -142,15 +145,19 @@ class Iter(Generic[T]):
         return sum(self, start)
 
     def mul(self, initial: U = 1) -> U:
+        """Fold the ``Iter`` via pairwise multiplication."""
         return self.reduce(operator.mul, initial = initial)
 
     def dot(self, other):
+        """Return the dot product of two ``Iter``s (sum of elementwise product)."""
         return sum(map(operator.mul, self, other))
 
     def __matmul__(self, other):
+        """Operator overload for ``Iter.dot``."""
         return self.dot(other)
 
     def find(self, func: Callable[[T], bool]) -> Option[T]:
+        """Returns ``Some(element)``, for the first ``element`` of the ``Iter`` where ``func(element)`` is ``True`."""
         for t in self:
             if func(t):
                 return Some(t)
@@ -158,6 +165,7 @@ class Iter(Generic[T]):
         return Nun()
 
     def position(self, func: Callable[[T], bool]) -> Option[int]:
+        """Returns ``Some(index)``, for the first ``index`` of the ``Iter`` where ``func(element)`` is ``True`."""
         for idx, t in self.enumerate():
             if func(t):
                 return Some(idx)
@@ -165,6 +173,7 @@ class Iter(Generic[T]):
         return Nun()
 
     def find_position(self, func: Callable[[T], bool]) -> Option[Tuple[int, T]]:
+        """Returns ``Some(index, element)``, for the first ``element`` of the ``Iter`` where ``func(element)`` is ``True`."""
         for idx, t in self.enumerate():
             if func(t):
                 return Some((idx, t))
@@ -182,14 +191,20 @@ class Iter(Generic[T]):
         return functools.reduce(func, self, initial)
 
     def collect(self, collection_type: Type[Collection]) -> Collection[T]:
+        """Collect the elements of the ``Iter`` into a collection of type ``collection_type``."""
         return collection_type(self)
 
     def join(self, separator: str = ''):
+        """Join the elements of the ``Iter``, as a string join with separation ``separator``."""
         return separator.join(self.map(str))
 
     # METHODS THAT DO OTHER STUFF
 
     def partition(self, func: Callable[[T], bool]) -> Tuple[List[T], List[T]]:
+        """
+        Divides the ``Iter`` elements into two groups based on whether ``func(element)`` is ``True`` or ``False``.
+        Returns a tuple of two lists, the first with all of the ``True`` elements, the second with all of the ``False`` elements.
+        """
         passed = []
         failed = []
         for t in self:
@@ -206,5 +221,6 @@ class Iter(Generic[T]):
             func(t)
 
     def star_for_each(self, func: Callable[[Any], None]) -> None:
+        """Call a function on each element of the ``Iter``, unpacking each element into the function's arguments as a tuple."""
         for t in self:
             func(*t)
