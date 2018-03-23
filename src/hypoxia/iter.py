@@ -70,31 +70,38 @@ class Iter(Generic[T]):
         return self.__class__(enumerate(self, start = start))
 
     def map(self, func: Callable[[T], U]) -> 'Iter[U]':
-        """Return a new ``Iter``, with each element mapped under the function ``func``."""
+        """Return a new ``Iter`` with each element mapped under the function ``func``."""
         return self.__class__(map(func, self))
 
     def star_map(self, func: Callable[[Any], U]) -> 'Iter[U]':
-        """Return a new ``Iter``, with each element mapped under the function ``func``, unpacked into the arugments of ``func`` as a tuple."""
+        """
+        Return a new ``Iter`` with each element mapped under the function ``func``.
+        Each element is unpacked into the function's arguments.
+        """
         return self.__class__(itertools.starmap(func, self))
 
     def filter(self, func: Callable[[T], bool]) -> 'Iter[T]':
-        """Return a new ``Iter``, containing only elements that ``func(element)`` is ``True`` for."""
+        """Return a new ``Iter`` containing only elements that ``func(element)`` is true for."""
         return self.__class__(filter(func, self))
 
     def filter_map(self, func: Callable[[T], Option[U]]) -> 'Iter[U]':
-        """Return a new ``Iter``, containing only elements that ``func(element)`` is a ``Some`` for."""
+        """Return a new ``Iter`` containing the values of ``func(element)`` if ``func(element)`` is :class:`Some` and skipping it otherwise."""
         return self.map(func).filter(lambda x: x.is_some()).map(lambda x: x.unwrap())
 
     def compress(self, selectors: Iterable[bool]) -> 'Iter[T]':
+        """Return a new ``Iter`` containing only the elements where ``selector`` has a ``True``-like value at that index."""
         return self.__class__(itertools.compress(self, selectors))
 
     def skip_while(self, func: Callable[[T], bool]) -> 'Iter[T]':
+        """Return a new ``Iter`` containing all of the elements after (and including) the first element that ``func(element)`` is ``False`` for."""
         return self.__class__(itertools.dropwhile(func, self))
 
     def take_while(self, func: Callable[[T], bool]) -> 'Iter[T]':
+        """Return a new ``Iter`` containing all of the elements up to the last one that ``func(element)`` is ``True`` for."""
         return self.__class__(itertools.takewhile(func, self))
 
     def product(self, *iters, repeat: int = 1) -> 'Iter':
+        """Return a new ``Iter`` containing the Cartesian product of the ``Iter`` and the iterables in ``iter``."""
         return self.__class__(itertools.product(self, *iters, repeat = repeat))
 
     def __mul__(self, other):
@@ -102,18 +109,26 @@ class Iter(Generic[T]):
         return self.product(other)
 
     def permutations(self, r = None) -> 'Iter':
+        """Return a new ``Iter`` containing all of the permutations of the elements of the ``Iter`` of length ``r``."""
         return self.__class__(itertools.permutations(self, r = r))
 
     def combinations(self, r) -> 'Iter':
+        """Return a new ``Iter`` containing all of the combinations of the elements of the ``Iter`` of length ``r``."""
         return self.__class__(itertools.combinations(self, r))
 
     def combinations_with_replacement(self, r) -> 'Iter':
+        """Return a new ``Iter`` containing all of the combinations of the elements of the ``Iter`` of length ``r``, with replacement."""
         return self.__class__(itertools.combinations_with_replacement(self, r))
 
     def cycle(self):
+        """Return a new ``Iter`` which repeats the elements of the ``Iter`` cyclically., forever."""
         return self.__class__(itertools.cycle(self))
 
     def sorted(self, key = None, reversed = False):
+        """
+        Return a new ``Iter`` containing the elements of the ``Iter`` in sorted order.
+        ``key`` and ``reversed`` have the same meaning as in :function:`sorted`.
+        """
         return Iter(sorted(self, key = key, reverse = reversed))
 
     # METHODS THAT COLLAPSE THE ITERATOR, RETURNING SINGLE VALUES
