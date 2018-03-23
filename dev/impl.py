@@ -2,19 +2,20 @@ from hypoxia import impl
 
 
 class Foo:
-    def __init__(self, attr):
-        self.attr = attr
-
     def method(self):
-        print(self.attr.upper())
+        print(self.__class__.__name__.upper())
 
 
-@impl(Foo)
+class Baz():
+    pass
+
+
+@impl(Foo, Baz)
 def impl_method(self):
-    print(self.attr.lower())
+    print(self.__class__.__name__.lower())
 
 
-f = Foo('AAAbbb ')
+f = Foo()
 
 print(f.method)
 print(f.impl_method)
@@ -25,8 +26,5 @@ f.impl_method()
 print(type(f.method))
 print(type(f.impl_method))
 
-print(globals())
-
-# print(impl_method.__get__(None, type(None)))
-# print(impl_method.__get__(f, type(f)))
-# impl_method.__get__(f, type(f))()
+b = Baz()
+b.impl_method()
