@@ -2,7 +2,7 @@ from typing import Type
 
 
 def impl(*cls: Type):
-    """A decorator that adds a method to a class."""
+    """A decorator that adds a method to classes."""
 
     def wrapper(func):
         for c in cls:

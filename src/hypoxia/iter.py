@@ -25,10 +25,12 @@ class Iter(Generic[T]):
 
     @classmethod
     def count(cls, start = 0, step = 1) -> 'Iter[int]':
+        """Return an ``Iter`` that "counts" forever from ``start`` by ``step`` increments."""
         return cls(itertools.count(start = start, step = step))
 
     @classmethod
     def repeat(cls, element: T, times: Optional[int] = None) -> 'Iter[T]':
+        """Return an ``Iter`` that yields ``element`` a certain number of ``times``, or forever if ``times`` is ``None``."""
         if times is None:
             return cls(itertools.repeat(element))
         return cls(itertools.repeat(element, times = times))
@@ -36,9 +38,11 @@ class Iter(Generic[T]):
     # METHODS THAT RETURN NEW ITERATORS
 
     def chain(self, *iters) -> 'Iter':
+        """Return a new ``Iter`` that yields all of the elements of the component iterators."""
         return self.__class__(itertools.chain(self, *iters))
 
     def __add__(self, other):
+        """Operator overload for ``Iter.chain``."""
         return self.chain(other)
 
     def zip(self, *iters: Iterable) -> 'Iter[Tuple]':
@@ -46,12 +50,18 @@ class Iter(Generic[T]):
         return self.__class__(zip(self, *iters))
 
     def __and__(self, other):
+        """Operator overload for ``Iter.zip``."""
         return self.zip(other)
 
     def zip_longest(self, *iters: Iterable, fill = None) -> 'Iter[Tuple]':
+        """
+        Make an ``Iter`` of tuples of aligned elements from this ``Iter`` and each of the input iterables.
+        Instead of stopping at the end of the shortest iterable, this method continues yielding tuples, using the ``fill`` value to replace missing inputs.
+        """
         return self.__class__(itertools.zip_longest(self, *iters, fillvalue = fill))
 
     def __or__(self, other):
+        """Operator oeverload for ``Iter.zip_longest``."""
         return self.zip_longest(other)
 
     def unzip(self) -> List[List]:
@@ -145,16 +155,19 @@ class Iter(Generic[T]):
         return any(self)
 
     def max(self, key = None):
+        """Return the maximum value in the ``Iter``, possibly using a ``key`` function."""
         if key is None:
             return max(self)
         return max(self, key = key)
 
     def min(self, key = None):
+        """Return the minimum value in the ``Iter``, possibly using a ``key`` function."""
         if key is None:
             return min(self)
         return min(self, key = key)
 
     def sum(self, start: Optional[T] = None) -> T:
+        """Return the sum of the elements in the ``Iter``, possibly using a ``start`` value."""
         if start is None:
             return sum(self)
         return sum(self, start)

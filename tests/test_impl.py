@@ -41,3 +41,21 @@ def test_impl_is_called_correctly(dummy_class, mocker):
     d.impl_method()
 
     assert mock.call_count == 1
+
+
+def test_impl_on_multiple_classes():
+    class DummyA:
+        pass
+
+    class DummyB:
+        pass
+
+    @impl(DummyA, DummyB)
+    def impl_method(self):
+        pass
+
+    a = DummyA()
+    a.impl_method()
+
+    b = DummyB()
+    b.impl_method()
