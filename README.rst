@@ -1,6 +1,12 @@
 Hypoxia
 =======
 
+.. image:: https://travis-ci.org/JoshKarpel/hypoxia.svg?branch=master
+    :target: https://travis-ci.org/JoshKarpel/hypoxia
+
+.. image:: https://codecov.io/gh/JoshKarpel/hypoxia/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/JoshKarpel/hypoxia
+
 As we all know, Python is a multi-paradigm language.
 We can write simple scripts, complex object-oriented applications, mostly-functional programs, and many other styles, all under the same umbrella.
 There are even ambitious projects like `Coconut <http://coconut-lang.org/>`_, which defines a superset of Python that gives you functional constructs to work with.
